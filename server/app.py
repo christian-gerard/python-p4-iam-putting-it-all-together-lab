@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import request, session
+from flask import request, session, make_response
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 
@@ -8,7 +8,25 @@ from config import app, db, api
 from models import User, Recipe
 
 class Signup(Resource):
-    pass
+
+    def get(self):
+        users = User.query
+        if users:
+            pass
+
+    def post(self):
+        data = request.get_json()
+        if data:
+            new_user = User(**data)
+            db.session.add(new_user)
+            db.session.commit()
+            response = make_response( new_user, 201)
+            return response
+        
+
+
+
+
 
 class CheckSession(Resource):
     pass
