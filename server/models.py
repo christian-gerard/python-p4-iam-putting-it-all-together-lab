@@ -15,24 +15,24 @@ class User(db.Model, SerializerMixin):
 
     recipes = db.relationship('Recipe', back_populates='user')
 
+    serialize_rules = ('-recipes',)
+
+    def __repr__(self):
+         return f'<USER {self.id}: {self.username}>'
     @hybrid_property
     def password_hash(self):
-        return self._password_hash
+        raise AttributeError('CANT CHANGE')
 
     @password_hash.setter
     def password_hash(self, password):
-        if not password:
-            self._password_hash = self.simple_hash(password)
-        else:
-            raise AttributeError('Cant Change password')
-  
+        # utf-8 encoding and decoding is required in python 3
+            password_hash = bcrypt.generate_password_hash(password.encode('utf-8'))
+            self._password_hash = password_hash.decode('utf-8')
+
 
     def authenticate(self, password):
-        return self.simple_hash(password) == self.password_hash
-
-    @staticmethod
-    def simple_hash(input):
-        return sum(bytearray(input, encoding='utf-8'))
+        return bcrypt.check_password_hash(
+            self._password_hash, password.encode('utf-8'))
 
 class Recipe(db.Model, SerializerMixin):
 
