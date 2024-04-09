@@ -79,24 +79,23 @@ class RecipeIndex(Resource):
     def get(self):
         try:
             if id := session.get('user_id'):
-                recipes = [recipe.to_dict() for recipe in Recipe.query.filter(Recipe.id == id).all()]
+                recipes = [recipe.to_dict() for recipe in Recipe.query.filter(Recipe.user_id == id).all()]
                 return recipes, 200
             else:
                 return {'Error' : 'User not logged in'}, 401
-
 
         except Exception as e:
             return {'error' : str(e)}, 401
         
     def post(self):
         try:
-            data = request.get_json()
-            
-            new_recipe = Recipe(instructions=data.get('instructions'), minutes_to_complete=data.get('minutes_to_complete'), title=data.get('title'))
+            if id := session.get('user_id'):
+                data = request.get_json()
+                new_recipe = Recipe(instructions=data.get('instructions'), minutes_to_complete=data.get('minutes_to_complete'), title=data.get('title'), user_id=id)
 
-            if new_recipe:
                 db.session.add(new_recipe)
                 db.session.commit()
+
                 return new_recipe.to_dict(), 201
         except Exception as e:
             return {"error": str(e)}, 422
